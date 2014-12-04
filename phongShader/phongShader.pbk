@@ -1,0 +1,57 @@
+<languageVersion : 1.0;>
+
+kernel PhongShader
+<   namespace : "com.om-labs.filters.phongShader";
+    vendor : "Om Labs";
+    version : 1;
+    description : "Do Phong Shading to create realistically shiny objects";
+>
+{
+    input image4 src;
+    output pixel4 dst;
+    
+    parameter float3 lightPos<
+        minValue:float3(-1000.0);
+        maxValue:float3(1000.0);
+        defaultValue:float3(0.0);
+    >;
+    
+    parameter float3 eyePos<
+        minValue:float3(-1000.0);
+        maxValue:float3(1000.0);
+        defaultValue:float3(800.0,600.0,-500.0);
+    >;
+    
+    parameter pixel3 lightColor<
+        minValue:pixel3(0.0);
+        maxValue:pixel3(1.0);
+        defaultValue:pixel3(1.0);
+    >;
+    
+    //Coefficients [0]= ambient, [1]==diffuse, [2]==specular
+    parameter float3 k<
+        minValue:float3(0.0);
+        maxValue:float3(1.0);
+        defaultValue:float3(0.2);
+    >;
+    
+
+    const float3 normalVec = float3(0,0,-1);//the normal of the shape
+    
+    void evaluatePixel(){
+        float2 curPos = outCoord();
+        pixel4 curColor = sampleNearest(src,curPos);
+        
+        //lighting equation can be found from the UNSW CSE Graphics Course Site. 
+        //http://www.cse.unsw.edu.au/~cs3421/slides/COMP3421-shade.pdf
+        float3 pixelPos = float3(curPos.x,curPos.y,0); //position of pixel. Assuming pixel is at 0 depth.
+        float3 lightVec = normalize(lightPos- pixelPos); //vector of lightPos from pixelPos
+        float NdotL = clamp(-lightVec.z,0.0,1.0);// N.L light intensity degrades with larger angle
+        float3 viewVec = normalize(eyePos - pixelPos); //vector of viewPos from pixelPos
+        float3 reflectVec = 2.0 * normalVec * NdotL - lightVec; //vector of reflection
+        float VdotR = clamp(dot(viewVec,reflectVec),0.0,1.0);//The smaller the angle between reflection ray and eye ray, the higher the intensity of color
+        dst.rgb = curColor.rgb * k[0] + lightColor*abs(lightVec.z)*k[1] + VdotR*k[2];//calculation of final pixel output - phong exponent == 1
+        
+        
+    }
+}

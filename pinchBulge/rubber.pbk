@@ -1,0 +1,48 @@
+<languageVersion : 1.0;>
+
+kernel PinchBulgeFilter
+<   namespace : "com.om-labs.filters.pinchBulge";
+    vendor : "Om Labs";
+    version : 1;
+    description : "Pinch Bulge By maintaining Anchors";
+>
+{
+   
+    parameter float2 center<
+        minValue: float2(0.0);
+        defaultValue: float2(800.0,600.0);
+        maxValue: float2(1000.0,1000.0);
+    
+    >;
+    
+    parameter float2 dimensions<
+        minValue:float2(0.0);
+        defaultValue: float2(1600.0,1200.0);
+        maxValue:float2(2048.0,2048.0);
+    >;
+    
+ 
+    parameter float power<
+        minValue: 0.0;
+        defaultValue: 2.0;
+        maxValue:5.0;
+    >;
+    
+    input image4 src;
+    output pixel4 dst;
+
+    const float PI2 = 6.28318531;    
+
+    
+    void evaluatePixel(){
+        float maxDist = length(dimensions/2.0);
+        float multiplier = maxDist/pow(maxDist,power);
+        float2 curPos = outCoord() - center;//translate to centreSpace
+        float dist = length(curPos);//distance from the centre
+        float curAngle = atan(curPos.y,curPos.x);//angle from the centre
+        dist=pow(dist,power)*multiplier;//power up the distance
+        float2 nextPos = float2(dist * cos(curAngle), dist*sin(curAngle));//convert from polar to cartesian
+        dst = sampleNearest(src, center + nextPos);//translate back to world space
+
+    }
+}

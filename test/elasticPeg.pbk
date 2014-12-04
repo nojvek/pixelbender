@@ -1,0 +1,77 @@
+<languageVersion : 1.0;>
+
+kernel ElasticPegFilter
+<   namespace : "com.rocketboots.filters.elasticPeg";
+    vendor : "RocketBoots";
+    version : 1;
+    description : "Create an Elastic Picture, anchored with pegs";
+>
+{
+   
+    parameter float2 bottom<
+        minValue: float2(0.0);
+        maxValue: float2(2000.0);        
+        defaultValue: float2(0.0,1600.0);
+
+    >;
+
+    parameter float2 top<
+        minValue: float2(0.0);
+        maxValue: float2(2000.0);        
+        defaultValue: float2(0.0,1600.0);
+    >;
+    
+    parameter float2 left<
+        minValue: float2(0.0);
+        maxValue: float2(2000.0);        
+        defaultValue: float2(0.0,1200.0);
+
+    >;
+
+    parameter float2 right<
+        minValue: float2(0.0);
+        maxValue: float2(2000.0);        
+        defaultValue: float2(0.0,1200.0);
+    >; 
+    parameter float2 offset<
+        minValue: float2(-2000.0);
+        maxValue: float2(2000.0);
+        defaultValue: float2(0.0);
+    >;
+
+    parameter float2 dimensions<
+        minValue:float2(0.0,0.0);
+        defaultValue: float2(1600.0,1200.0);
+        maxValue:float2(2000.0,2000.0);
+    >;
+    
+ 
+    input image4 src;
+    output pixel4 dst;
+    
+    const float PI2 = 1.5707963275;
+    const float PI = 3.141592655;
+    
+    void evaluatePixel(){
+        float2 curPos = outCoord();//translate to centreSpace
+        
+        float sinCurve = sin((PI*curPos.y)/dimensions.y+PI2);
+        float ptA = ((top.x-bottom.x)/2.0)*(sinCurve - 1.0) + top.x;
+        float ptB = ((top.y-bottom.y)/2.0)*(sinCurve - 1.0) + top.y;
+        float mixFactor = (curPos.x - ptA)/(ptB-ptA);
+        
+        sinCurve = sin((PI*curPos.x)/dimensions.x+PI2);
+        curPos.x = mix(0.0,dimensions.x,mixFactor);
+        
+        ptA = ((left.x-right.x)/2.0)*(sinCurve - 1.0) + left.x;
+        ptB = ((left.y-right.y)/2.0)*(sinCurve - 1.0) + left.y;
+        mixFactor = (curPos.y - ptA)/(ptB-ptA);
+        curPos.y = mix(0.0,dimensions.y,mixFactor);
+        
+        curPos += offset;
+        dst = sampleNearest(src, curPos );
+
+    }
+    
+
+}

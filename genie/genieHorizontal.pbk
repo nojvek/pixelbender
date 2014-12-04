@@ -1,0 +1,57 @@
+<languageVersion : 1.0;>
+
+kernel GenieHorizontal
+<   namespace : "com.rocketboots.filters.horizontalGenieEffect";
+    vendor : "RocketBoots";
+    version : 1;
+    description : "Create a Genie like effect";
+>
+{
+   
+    parameter float2 left<
+        minValue: float2(0.0);
+        maxValue: float2(2000.0);        
+        defaultValue: float2(0.0,1200.0);
+
+    >;
+
+    parameter float2 right<
+        minValue: float2(0.0);
+        maxValue: float2(2000.0);        
+        defaultValue: float2(0.0,1200.0);
+    >;
+
+    parameter float offset<
+        minValue: float(-2000.0);
+        maxValue: float(2000.0);
+        defaultValue: float(0.0);
+    >;
+
+    parameter float2 dimensions<
+        minValue:float2(0.0,0.0);
+        defaultValue: float2(1600.0,1200.0);
+        maxValue:float2(2000.0,2000.0);
+    >;
+    
+ 
+    input image4 src;
+    output pixel4 dst;
+    
+    const float PI2 = 1.5707963275;
+    const float PI = 3.141592655;
+    
+    void evaluatePixel(){
+        
+        float2 curPos = outCoord();//translate to centreSpace
+        float sinCurve = sin((PI*curPos.x)/dimensions[0]+PI2);
+        float2 edgePoints = ((left-right)/2.0)*(sinCurve - 1.0) + left;
+        float mixFactor = (curPos.y - edgePoints[0])/(edgePoints[1]-edgePoints[0]);
+        
+        curPos.y = mix(0.0,dimensions[1],mixFactor);
+        curPos.x += offset;
+        dst = sampleNearest(src, curPos );
+
+    }
+    
+
+}

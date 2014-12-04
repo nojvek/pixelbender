@@ -1,0 +1,25 @@
+<languageVersion : 1.0;>
+
+kernel BlendFilter
+<   namespace : "omlabs";
+    vendor : "Om Labs";
+    version : 1;
+    description : "your description";
+>
+{
+    parameter float alpha<
+        maxValue:1.0;
+        minValue:0.0;
+        defaultValue:0.0;
+    >;
+    input image4 src;
+    input image4 src2;
+    output pixel4 dst;
+
+    void evaluatePixel()
+    {
+        pixel4 srcColor = sampleNearest(src,outCoord());
+        pixel4 src2Color = sampleNearest(src2,outCoord());
+        dst = mix(srcColor,src2Color,alpha);
+    }
+}

@@ -1,0 +1,30 @@
+<languageVersion : 1.0;>
+kernel Mosaic
+<   namespace : "com.gfxcomplex.bender";
+    vendor : "GFX Complex";
+    version : 1;
+    description : "Mosaic by Josh Chernoff";
+>
+
+{
+
+
+    parameter float size
+    <
+    minValue:float(1);
+    maxValue:float(100.0);
+    defaultValue:float(23);
+    >;
+
+
+    input image4 src;
+    output pixel4 dst;
+
+    void
+    evaluatePixel()
+    {
+        float2 p = outCoord();
+        p = mod(p,size);
+        dst = sample(src,outCoord() - p);
+    }
+} 

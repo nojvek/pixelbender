@@ -1,0 +1,47 @@
+<languageVersion : 1.0;>
+
+kernel NewFilter
+<   namespace : "Your Namespace";
+    vendor : "Your Vendor";
+    version : 1;
+    description : "your description";
+>
+{
+   
+    parameter float2 center<
+        minValue: float2(0.0);
+        defaultValue: float2(800.0,600.0);
+        maxValue: float2(1000.0,1000.0);
+    
+    >;
+    
+    parameter float2 dimensions<
+        minValue:float2(0.0);
+        defaultValue: float2(1600.0,1200.0);
+        maxValue:float2(2048.0,2048.0);
+    >;
+    
+ 
+    parameter float power<
+        minValue: 0.0;
+        defaultValue: 2.0;
+        maxValue: 3.0;
+    >;
+    
+    input image4 src;
+    output pixel4 dst;
+    
+    void evaluatePixel(){
+
+        float2 curPos = center - outCoord();//translate to centreSpace
+        float dist = length(curPos);//distance from the centre
+        float maxDist = length(dimensions/2.0);
+        float curAngle = atan(-curPos.y,curPos.x);//angle from the centre
+
+        dist=pow(dist,power)*maxDist/pow(maxDist,power);//power up the distance
+        float2 nextPos = float2(dist * cos(curAngle), dist*sin(curAngle));//convert from polar to cartesian
+                
+        dst = sampleNearest(src, center + nextPos);//translate back to world space
+
+    }
+}

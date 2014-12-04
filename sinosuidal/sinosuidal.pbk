@@ -1,0 +1,36 @@
+<languageVersion : 1.0;>
+
+kernel NewFilter
+<   namespace : "com.om-labs.pixelbender.sinosuidal";
+    vendor : "Om Labs";
+    version : 1;
+    description : "Displaces the images using sinosuidal curves";
+>
+{
+    input image4 src;
+    output pixel4 dst;
+    
+    parameter float2 amplitude<
+        minValue: float2(0.0);
+        maxValue:float2(1000.0);
+        defaultValue:float2(1,0.0);
+    >;    
+    
+    parameter float2 frequency<
+        minValue: float2(0.0);
+        maxValue:float2(1.0);
+        defaultValue:float2(0.1);
+    >;    
+    
+    parameter float2 phase<
+        minValue: float2(0.0);
+        maxValue:float2(20.0);
+        defaultValue:float2(10.0);
+    >;        
+
+    void evaluatePixel(){
+        float2 pos = outCoord();
+        pos = pos + amplitude*sin((pos*frequency)+phase);
+        dst = sampleNearest(src,pos);
+    }
+}

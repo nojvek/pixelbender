@@ -1,0 +1,134 @@
+<languageVersion : 1.0;>
+
+kernel HSBFilter
+<   namespace : "Your Namespace";
+    vendor : "Your Vendor";
+    version : 1;
+    description : "your description";
+>
+{
+    parameter float hue
+    <
+        minValue:0.0;
+        maxValue:360.0;
+        defaultValue:0.0;
+    >;
+    
+    parameter float saturation
+    <
+        minValue:-1.0;
+        maxValue:1.0;
+        defaultValue:0.0;
+    >;
+    parameter float brightness
+    <
+        minValue:-1.0;
+        maxValue:1.0;
+        defaultValue:0.0;
+    >;
+    
+    input image4 src;
+    output pixel4 dst;
+
+    void
+    evaluatePixel()
+    {
+        
+        //RGBtoHSV
+        pixel4 rgba = sampleNearest(src, outCoord());
+        float r = rgba.r;
+        float g = rgba.g;
+        float b = rgba.b;
+        float a = rgba.a;
+        
+        float fmax = max(r,max(g,b));
+        float fmin = min(r,min(g,b));
+        float H = 0.0;
+        float S = 0.0;
+        float f,i;
+        
+        if( fmax != fmin){
+            
+            if(r==fmin){
+                f = g-b;
+                i = 3.0;
+            }else if (g==fmin){
+                f = b-r;
+                i = 5.0;
+            }else{
+                f = r-g;
+                i = 1.0;
+            }
+            
+            H = (i-f/(fmax-fmin));
+            if(H>=6.0) H-=6.0;
+            H*=60.0;
+            S = (fmax-fmin)/fmax;
+        }
+        float V = fmax;
+        
+        //change value of H, S and V                
+        H = H + hue;
+        if ( H>360.0)
+        {
+            H-=360.0;
+        }
+        
+        S = clamp(S + saturation,0.0,1.0);
+        V = clamp(V + brightness,0.0,1.0);
+        
+        //HSVtoRGB
+        r = 0.0;
+        g = 0.0;
+        b = 0.0;
+        
+        if (H==0.0 && S==0.0) 
+        {
+            r=g=b=V;
+        }
+        else
+        {
+            H /= 60.0;
+            int i = int(floor(H));
+            float f = 0.0;
+            if(mod(float(i),2.0) != 0.0)
+            {
+                f = H - float(i);
+            }
+            else
+            {
+                f = 1.0 - H + float(i);
+            }
+            float m = V*(1.0-S);
+            float n = V*(1.0-S*f);
+            
+            if( i==6 || i==0)
+            {
+                r = V; g = n; b = m;
+            }
+            if( i==1 )
+            {
+                r = n; g = V; b = m;
+            }
+            if( i==2 )
+            {
+                r = m; g = V; b = n;
+            }
+            if( i==3 )
+            {
+                r = m; g = n; b = V; 
+            }
+            if( i==4 )
+            {
+                r = n; g = m; b = V;
+            }
+            if( i==5 )
+            {
+                r = V; g = m; b = n;
+            }
+            
+        }
+        dst = pixel4(r,g,b,a);
+        
+    }
+}

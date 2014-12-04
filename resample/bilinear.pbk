@@ -1,0 +1,29 @@
+<languageVersion : 1.0;>
+
+kernel NewFilter
+<   namespace : "Your Namespace";
+    vendor : "Your Vendor";
+    version : 1;
+    description : "your description";
+>
+{
+    parameter float scale<
+        minValue:0.0;
+        maxValue:1.0;
+        defaultValue:1.0;
+    >;
+    
+    input image4 src;
+    output pixel4 dst;
+
+
+    void evaluatePixel(){
+        float2 newPixel = outCoord() / float2(scale);
+        dst = sampleNearest(src,newPixel) + 
+            sampleNearest(src,newPixel + float2(1,0)) + 
+            sampleNearest(src,newPixel + float2(0,1)) + 
+            sampleNearest(src,newPixel + float2(1,1));
+        
+        dst /= 4.0;
+    }
+}

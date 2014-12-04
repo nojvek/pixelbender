@@ -1,0 +1,27 @@
+<languageVersion : 1.0;>
+
+kernel RandomNessFilter
+<   namespace : "com.om-labs.filters.randomNess";
+    vendor : "Om Labs";
+    version : 1;
+    description : "use the rand function to generate random integers";
+>
+{
+    input image4 src;
+    output pixel4 dst;
+    
+    parameter int seed<
+        maxValue: 32767;
+        minValue: -32768;
+        defaultValue : 0;
+    >;
+
+    void evaluatePixel(){
+        //int z = 36969 * (z & 65535) + (z >> 16); w = 18000 * (w & 65535) + (w >> 16); rand = (z << 16) + w;
+        float2 pos = outCoord();
+        float rnd = pos.x + float(seed);
+        rnd = mod(rnd * 32719.0 + 3.0,32749.0) + 1.0;
+        dst.a = 1.0;
+        dst.r =rnd/32749.0;
+    }
+}

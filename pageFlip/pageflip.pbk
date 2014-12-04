@@ -1,0 +1,67 @@
+<languageVersion : 1.0;>
+
+kernel NewFilter
+<   namespace : "org.iifetx.pageFlip";
+    vendor : "Om Labs";
+    version : 1;
+    description : "Pixel Bender Port of the popular page flip component";
+>
+{
+
+    parameter float2 mouse<
+        maxValue:float2(800,600);
+        minValue:float2(-800,-600);
+        defaultValue:float2(600,0);
+    >;
+    
+    parameter float width<
+        maxValue:float(800);
+        minValue:float(0);
+        defaultValue:float(800);        
+    >;
+    
+    parameter float height<
+        maxValue:float(600);
+        minValue:float(0);
+        defaultValue:float(600);        
+    >;
+    
+    input image4 src;
+    output pixel4 dst;
+    dependent float turnPos;
+
+    void evaluateDependents(){
+        float x_w =  mouse.x - width;
+        if(x_w != 0.0){
+            turnPos = ((mouse.y * mouse.y) + (mouse.x+width)*x_w)/(2.0*x_w);
+        }else{
+            turnPos = width;
+        }
+        //turnPos = ((mouse.y * mouse.y) + (mouse.x+width)*x_w)/(2.0*x_w);
+        //turnPos = 600.0;
+    }
+    
+    region generated(){
+        return region(float4(-width,0,width,height));
+    }
+
+    void evaluatePixel(){
+        float2 pos = outCoord();
+        
+        dst = sampleNearest(src,outCoord());
+        
+
+        float reflect = pos.x + (turnPos - pos.x)*2.0;
+       
+       
+        if(pos.x <= turnPos){
+            if (reflect <= width){
+                pos.x = reflect;
+            }
+            dst = sampleNearest(src,pos);
+        }else{
+            dst = float4(0,0,0,0);
+        }
+    
+    }
+}

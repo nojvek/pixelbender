@@ -1,0 +1,22 @@
+<languageVersion : 1.0;>
+
+kernel Brightness
+<   namespace : "omlabs";
+    vendor : "Om Labs";
+    version : 1;
+    description : "your description";
+>
+{
+    parameter float brightness<
+        maxValue:10.0;
+        minValue:0.0;
+        defaultValue:1.0;
+    >;
+    input image4 src;
+    output pixel4 dst;
+
+    void evaluatePixel(){
+        dst = sampleNearest(src,outCoord());
+        dst *= float4(brightness,brightness,brightness,1.0);
+    }
+}

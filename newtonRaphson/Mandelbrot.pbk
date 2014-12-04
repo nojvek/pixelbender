@@ -1,0 +1,157 @@
+/**
+ * Mandelbrot.pbk
+ * 
+ * Copyright (c) 2008 Tom Beddard
+ * http://www.subblue.com
+ * 
+ * Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.php
+ * 
+ * 
+ * Tips:
+ * - Use the centerPreset option to jump to interesting parts of the Mandelbrot set.
+ * - Increase the maxIterations option to increase detail on high zooms.
+ * 
+ * As loops aren't supported with Hydra code it curently isn't possible to export this
+ * for use in Flash.
+ * 
+ * 
+ * For more Flash and Pixel Blender based generative art experiments see:
+ * http://www.subblue.com/blog
+ * 
+ */
+
+<languageVersion : 1.0;>
+
+kernel Mandelbrot
+<   namespace : "com.subblue.filters";
+    vendor : "Tom Beddard";
+    version : 1;
+    description : "Mandelbrot set renderer";
+>
+
+#define BAILOUT 10.0
+
+{
+    output pixel4 dst;
+    
+    parameter int2 size
+    <
+        minValue:int2(100, 100);
+        maxValue:int2(1000, 1000);
+        defaultValue:int2(640, 480);
+    >;
+    
+    parameter float2 center
+    <
+        minValue:float2(-2.0, -1.0);
+        maxValue:float2(2.0, 1.0);
+        defaultValue:float2(-0.5, 0.0);
+    >;
+    
+    parameter float2 centerOffset
+    <
+        minValue:float2(-1.0, -1.0);
+        maxValue:float2(1.0, 1.0);
+        defaultValue:float2(0.0, 0.0);
+    >;
+    
+    parameter int centerPreset
+    <
+        minValue:0;
+        maxValue:4;
+        defaultValue:0;
+    >;
+    
+    parameter float zoomMajor
+    <
+        minValue:0.0;
+        maxValue:20.0;
+        defaultValue:0.0;
+    >;
+    
+    parameter float zoomMinor
+    <
+        minValue:0.0;
+        maxValue:10.0;
+        defaultValue:0.0;
+    >;
+    
+    parameter int maxIterations
+    <
+        minValue:20;
+        maxValue:800;
+        defaultValue:200;
+    >;
+    
+    region generated()
+    {
+        return region(float4(0, 0, size.x, size.y));
+    }
+    
+    void
+    evaluatePixel()
+    {
+        pixel4 p;
+        float aa, bb, zz, twoab;
+        float x0 = center.x;
+        float y0 = center.y;
+        
+        // Use a center preset to find some nice parts of the Mandelbrot set
+        if (centerPreset == 1) {
+            x0 = -0.742522478103764;
+            y0 = -0.143708014488453;
+        } else if (centerPreset == 2) {
+            x0 = 0.36295341867850555;
+            y0 = -0.6455617463848476;
+        } else if (centerPreset == 3) {
+            x0 = 0.3218759918211005;
+            y0 = 0.03518083572368085;
+        } else if (centerPreset == 4) {
+            x0 = -1.673497088962531;
+            y0 = -0.0003318667941149705;
+        }
+        
+        float zoom = exp(zoomMajor + zoomMinor);
+        float x1 = x0 - 2.0 / zoom;			// Left limit of x
+        float x2 = x0 + 2.0 / zoom;			// Right limit of x
+        
+        float spanX = x2 - x1;
+        float spanY = spanX * (float(size.y) / float(size.x));
+        float y1 = y0 - spanY / 2.0;
+        float y2 = y0 + spanY / 2.0;
+        
+        x1 += centerOffset.x * spanX;       // Shift centre for fine tuning of position
+        y1 += centerOffset.y * spanY;
+        
+        float2 z = float2(x1, y1) + outCoord() * float2(spanX / float(size.x), spanY / float(size.y));
+        float2 z0 = z;
+        int n = 0;
+        
+        dst = pixel4(0.0, 0.0, 0.0, 1.0);   // Set everything to black first
+        
+        /**
+		 *  Mandelbrot formula
+		 *	z' = z^2 + c
+		 *	 where: z = a + bi
+		 *		    z^2 = (a^2 - b^2) + (2ab)i
+		 *	 and: c = x + yi
+		 */
+        while (n < maxIterations) {
+            aa = z.x * z.x;
+            bb = z.y * z.y;
+            
+            if (aa + bb > BAILOUT) {
+                // Fill the pixel based on the time it takes to reach the bailout threshold
+                p = pixel4(1.0 - float(n) / float(maxIterations));
+                p.a = 1.0;
+                dst = p;
+                break;
+            }
+            
+            twoab = 2.0 * z.x * z.y;
+            z.x = aa - bb + z0.x;
+			z.y = twoab + z0.y;
+            n += 1;
+        }
+    }
+}

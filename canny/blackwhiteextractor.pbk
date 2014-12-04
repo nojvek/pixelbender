@@ -1,0 +1,22 @@
+<languageVersion : 1.0;>
+
+kernel NewFilter
+<   namespace : "Your Namespace";
+    vendor : "Your Vendor";
+    version : 1;
+    description : "your description";
+>
+{
+    input image4 src;
+    output pixel4 dst;
+
+    void
+    evaluatePixel()
+    {
+        float4 c = sampleNearest(src,outCoord());
+        dst = c;
+        c.rgb = float3(1.0 - abs(c.r-c.g),1.0-abs(c.g-c.b), 1.0 - abs(c.r - c.b));
+        dst.a = (c.r + c.g + c.b) / 3.0;
+        dst.a *= dst.a *dst.a*dst.a;
+    }
+}

@@ -1,0 +1,52 @@
+<languageVersion : 1.0;>
+
+kernel NewFilter
+<   namespace : "org.iifetx.pageFlip";
+    vendor : "Om Labs";
+    version : 1;
+    description : "Pixel Bender Port of the popular page flip component";
+>
+{
+
+    parameter float dist<
+        maxValue:float(1600);
+        minValue:float(0);
+        defaultValue:float(200);
+    >;
+    
+    parameter float width<
+        maxValue:float(800);
+        minValue:float(0);
+        defaultValue:float(800);        
+    >;
+    
+    parameter float height<
+        maxValue:float(600);
+        minValue:float(0);
+        defaultValue:float(600);        
+    >;
+    
+    input image4 src;
+    output pixel4 dst;
+    
+    region generated(){
+        return region(float4(0,0,width*2.0,height*2.0));
+        //return region(float4(0,0,width,height));
+    }
+
+    void evaluatePixel(){
+        float2 pos = outCoord(); //pos.x= -pos.y + mouse.x
+        
+        if((-pos.y + dist)<pos.x){//inside the page
+            float2 reflect = float2(dist - pos.y, dist - pos.x);
+            if(reflect.x < 0.0 || reflect.y < 0.0){
+                dst = sampleNearest(src,pos);
+            }else{
+                dst = sampleNearest(src,reflect);
+            }
+        }else{
+            dst = float4(0,0,0,0);
+        }
+    
+    }
+}

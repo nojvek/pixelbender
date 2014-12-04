@@ -1,0 +1,38 @@
+<languageVersion : 1.0;>
+
+kernel NewFilter
+<   namespace : "Your Namespace";
+    vendor : "Your Vendor";
+    version : 1;
+    description : "your description";
+>
+{
+    input image4 src;
+    output pixel4 dst;
+
+    
+    parameter float offset<
+        minValue: float(0);
+        maxValue: float(5000);
+        defaultValue: float(0);
+    >;
+    
+    parameter float height<
+        maxValue: float(2000);
+        minValue: float(0);
+        defaultValue:float(375); //using the default flowers image
+    >; 
+    
+
+
+    void evaluatePixel(){
+        float2 pos = outCoord();
+        float moduloed = mod(pos.y + offset, height);
+        if(mod((pos.y+offset) / height,2.0) > 1.0 ){
+            pos.y = height - moduloed;
+        }else{
+            pos.y = moduloed;
+        }
+        dst = sampleNearest(src,pos);
+    }
+}

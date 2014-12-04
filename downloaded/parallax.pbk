@@ -1,0 +1,141 @@
+<languageVersion : 1.0;>
+
+kernel SteepParallaxMapping
+<   namespace : "com.derschmale";
+    vendor : "";
+    version : 1;
+    description : "Steep Parallax Mapping is a bump mapping technique that can create parallax movement and self-occlusion. The normal map that has to be provided must contain height data in the alpha channel.";
+>
+{
+    input image4 texture;
+    input image4 heightMap;
+    output pixel4 dst;
+    
+    parameter float3 eyePosition
+        <   
+            minValue : float3(-1000.0, -1000.0, -1000.0);
+            maxValue : float3(1000.0, 1000.0, 1000.0);
+            defaultValue : float3(0.0, 0.0, 1.0);
+        >;
+        
+    parameter float bumpScale
+        < 
+            minValue : 0.0;
+            maxValue : 1.0;
+            defaultValue : 0.05;
+        >;
+    parameter int steps
+        <
+            minValue : 1;
+            maxValue : 20;
+            defaultValue : 10;
+        >;
+    
+    
+    void evaluatePixel()
+    {
+        float height = 1.0;
+        float numSteps = float(steps);
+        float step;
+        float2 delta;
+        float2 offsetCoord = outCoord();
+        float3 eyeNorm = normalize(eyePosition);
+        float sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+                
+        numSteps = mix(numSteps*2.0, numSteps, eyeNorm.z);
+        
+        step = 1.0/numSteps;
+        delta = eyePosition.xy * bumpScale / (eyePosition.z * numSteps);
+        
+        /* can't loop, so hardcode the same piece over and over */
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        if (sampleHeight < height) {
+            height -= step;
+            offsetCoord += delta;
+            sampleHeight = sampleNearest(heightMap, offsetCoord).r;
+        }
+        
+        dst = sampleNearest(texture, offsetCoord);
+        
+        
+    }
+}

@@ -1,0 +1,47 @@
+<languageVersion : 1.0;>
+
+kernel NewFilter
+<   namespace : "Your Namespace";
+    vendor : "Your Vendor";
+    version : 1;
+    description : "your description";
+>
+{
+    input image4 src;
+    output pixel4 dst;
+    
+    		/*	private var obsDist:Number = 2000;
+			private var eyeSep:Number = 280;
+			private var depthRatio:Number = 0.5; */
+            
+    parameter float obsDist<
+        minValue: 0.0;
+        maxValue: 10000.0;
+        defaultValue: 2000.0;
+    >;
+
+    parameter float eyeSep<
+        minValue: 0.0;
+        maxValue: 1000.0;
+        defaultValue: 280.0;
+    >;
+    
+    parameter float depthRatio<
+        minValue: 0.0;
+        maxValue: 1.0;
+        defaultValue: 0.5;
+    >;
+    
+    
+    void evaluatePixel()
+    {
+        float z = sampleNearest(src,outCoord()).z;
+        z = z * obsDist * depthRatio;
+        float sep = ((obsDist - z)/(2.0*obsDist - z)) * eyeSep * 0.5;
+        
+        dst.rgb = float3(sep/eyeSep);
+        dst.a = 1.0;
+
+        
+    }
+}

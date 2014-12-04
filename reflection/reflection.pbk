@@ -1,0 +1,54 @@
+<languageVersion : 1.0;>
+
+kernel ReflectionFilter
+<   namespace : "com.squidder";
+    vendor : "Jon Reiling / Squidder.com";
+    version : 1;
+    description : "Filter for creating an apple-like reflection.";
+>
+{
+    input image4 src;
+    output pixel4 dst;
+    
+    parameter float height<
+        minValue: 0.0;
+        maxValue : 1000.0;
+        defaultValue :300.0;
+    
+    >;
+        
+    parameter float fadeHeight<
+        minValue : 0.0;
+        maxValue: 1000.0;
+        defaultValue: 50.0;
+    >;
+    
+    parameter float fadeAlpha<
+        minValue : 0.0;
+        maxValue : 1.0;
+        defaultValue : 0.5;
+    >;
+
+    void evaluatePixel(){
+        float2 pos = outCoord();
+
+        if(pos.y <= height){
+            dst = sampleNearest(src,pos);
+        } else {
+            float outY = pos.y - height;
+            float alpha = mix(fadeAlpha,0.0,outY/fadeHeight);
+            pos.y = height - outY;
+            dst = sampleNearest(src,pos);
+            dst += sampleNearest(src,float2(pos.x-1.0,pos.y));
+            dst += sampleNearest(src,float2(pos.x+1.0,pos.y));
+            dst += sampleNearest(src,float2(pos.x,pos.y-1.0));  
+            dst += sampleNearest(src,float2(pos.x,pos.y+1.0));
+            dst += sampleNearest(src,float2(pos.x-1.0,pos.y-1.0));
+            dst += sampleNearest(src,float2(pos.x+1.0,pos.y-1.0));
+            dst += sampleNearest(src,float2(pos.x-1.0,pos.y+1.0));
+            dst += sampleNearest(src,float2(pos.x+1.0,pos.y+1.0));            
+            dst /= float4(9.0); 
+            dst *= float4(alpha);
+        }
+    }
+}

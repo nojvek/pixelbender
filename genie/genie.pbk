@@ -1,0 +1,76 @@
+<languageVersion : 1.0;>
+
+kernel Genie
+<   namespace : "com.rocketboots.filters.genieEffect";
+    vendor : "RocketBoots";
+    version : 1;
+    description : "Create a Genie like effect";
+>
+{
+   
+    parameter float2 bottom<
+        minValue: float2(0.0);
+        maxValue: float2(2000.0);        
+        defaultValue: float2(0.0,1600.0);
+
+    >;
+
+    parameter float2 top<
+        minValue: float2(0.0);
+        maxValue: float2(2000.0);        
+        defaultValue: float2(0.0,1600.0);
+    >;
+
+    parameter float genieHeight<
+        minValue: float(0.0);
+        maxValue: float(2000.0);
+        defaultValue: float(1200.0);
+    >;
+ 
+ 
+    parameter float curveHeight<
+        minValue: float(0.0);
+        maxValue: float(2000.0);
+        defaultValue: float(1200.0);
+    >;
+ 
+    parameter float push<
+        minValue: float(-2000.0);
+        maxValue: float(2000.0);
+        defaultValue: float(0.0);
+    >;
+
+    parameter float2 dimensions<
+        minValue:float2(0.0,0.0);
+        defaultValue: float2(1600.0,1200.0);
+        maxValue:float2(2000.0,2000.0);
+    >;
+    
+ 
+    input image4 src;
+    output pixel4 dst;
+    
+    const float PI2 = 1.5707963275;
+    const float PI = 3.141592655;
+    
+    void evaluatePixel(){
+        float heightStretch = dimensions.y/curveHeight;
+        float heightDiff = dimensions.y - curveHeight;  
+        
+        float2 curPos = outCoord();//translate to centreSpace
+        curPos.y = (curPos.y - heightDiff) * heightStretch;    
+        
+        float sinCurve = sin((PI*curPos.y)/dimensions.y+PI2);
+        float leftX = ((top.x-bottom.x)/2.0)*(sinCurve - 1.0) + top.x;
+        float rightX = ((top.y-bottom.y)/2.0)*(sinCurve - 1.0) + top.y;
+        float mixX = (curPos.x - leftX)/(rightX-leftX);
+        
+        curPos.x = mix(0.0,dimensions.x,mixX);
+        curPos.y = (curPos.y+push)/(genieHeight/dimensions.y);
+        //float colorAdd = 1.0 - abs(rightX-leftX)/dimensions.x;
+        dst = sampleNearest(src, curPos );// - float4(colorAdd,colorAdd,colorAdd,0.0);
+
+    }
+    
+
+}

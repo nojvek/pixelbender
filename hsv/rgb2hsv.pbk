@@ -1,0 +1,75 @@
+<languageVersion : 1.0;>
+
+kernel HSBFilter
+<   namespace : "Your Namespace";
+    vendor : "Your Vendor";
+    version : 1;
+    description : "your description";
+>
+{
+    parameter float hueMultiplier
+    <
+        minValue:float(0.0);
+        maxValue:float(10.0);
+        defaultValue:float(1.0);
+    >;
+    
+    parameter float saturationMultiplier
+    <
+        minValue:float(0.0);
+        maxValue:float(10.0);
+        defaultValue:float(1.0);
+    >;
+    parameter float brightnessMultiplier
+    <
+        minValue:float(0.0);
+        maxValue:float(10.0);
+        defaultValue:float(1.0);
+    >;
+    
+    input image4 src;
+    output pixel4 dst;
+
+    void
+    evaluatePixel()
+    {
+        
+        //RGBtoHSV
+        pixel4 color = sampleNearest(src, outCoord());
+        float r = color.r;
+        float g = color.g;
+        float b = color.b;
+        
+        float maxColor = max(r,max(g,b));
+        float minColor = min(r,min(g,b));
+        float brightness = maxColor;
+        float colorDiff;
+        float colorAngle;
+        float hue = 0.0;
+        float saturation = 0.0;
+        
+        if(maxColor > minColor){
+            
+            if(r==minColor){
+                colorDiff = g-b;
+                colorAngle = 3.0;
+            }else if (g==minColor){
+                colorDiff = b-r;
+                colorAngle = 5.0;
+            }else{
+                colorDiff = r-g;
+                colorAngle = 1.0;
+            }
+            
+            float colorRange = maxColor - minColor;
+            
+            hue = (colorAngle-colorDiff/colorRange)/6.0;
+            if(hue >= 1.0) hue -= 1.0;
+    
+            saturation = colorRange/maxColor;
+        }
+        
+        dst = float4(hue * hueMultiplier,saturation*saturationMultiplier,brightness*brightnessMultiplier,color.a);
+        
+    }
+}

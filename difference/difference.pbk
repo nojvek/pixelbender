@@ -1,0 +1,43 @@
+<languageVersion : 1.0;>
+
+kernel NewFilter
+<   namespace : "Your Namespace";
+    vendor : "Your Vendor";
+    version : 1;
+    description : "your description";
+>
+{
+    parameter float2 mult<
+        minValue:float2(-1.0);
+        maxValue:float2(2.0);
+        defaultValue:float2(1.0);
+    >;
+    
+    parameter float threshold<
+        minValue:float(0.0);
+        maxValue:float(1.0);
+        defaultValue:float(0.2);
+    >;  
+
+    input image4 src;
+    input image4 src2;
+
+    output pixel4 dst;
+
+
+    void
+    evaluatePixel()
+    {
+        float4 pix1 = sampleNearest(src,outCoord());
+        float4 pix2 = sampleNearest(src2,outCoord());
+        pix1 *= float4(mult.x);
+        pix2 *= float4(mult.y);
+        
+        dst = abs(pix2 - pix1);
+        if(dst.r > threshold){
+            dst.rgb = float3(1);
+        }
+        dst.a = 1.0;
+        
+    }
+}

@@ -1,0 +1,18 @@
+<languageVersion: 1.0;>
+kernel Kernel
+<
+	namespace: "";
+	vendor: "";
+	version: 1;
+	description: "";
+>
+{
+	input image4 img;
+	output pixel4 dst;
+
+	void evaluatePixel(){
+		dst = sampleNearest(img, outCoord());
+        dst.rgb *= float3(0.2126,0.7152,0.0722);
+		dst.rgb = float3(dst.r + dst.g + dst.b);
+	}
+}

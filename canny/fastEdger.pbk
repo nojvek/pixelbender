@@ -1,0 +1,41 @@
+<languageVersion : 1.0;>
+
+kernel NewFilter
+<   namespace : "Your Namespace";
+    vendor : "Your Vendor";
+    version : 1;
+    description : "your description";
+>
+{
+    parameter float threshold<
+        minValue: 0.0;
+        maxValue: 1.0;
+        defaultValue: 0.0;
+    >;
+
+    input image4 src;
+    output pixel4 dst;
+
+    void evaluatePixel(){
+        float2 pos = outCoord();
+        
+        if( (sampleNearest(src,pos).r > threshold)){
+            if( (sampleNearest(src,float2(pos.x+1.0,pos.y)).r > threshold) &&
+                (sampleNearest(src,float2(pos.x-1.0,pos.y)).r > threshold) &&
+                (sampleNearest(src,float2(pos.x,pos.y+1.0)).r > threshold) &&
+                (sampleNearest(src,float2(pos.x,pos.y-1.0)).r > threshold) &&           
+                (sampleNearest(src,float2(pos.x+1.0,pos.y+1.0)).r > threshold) &&
+                (sampleNearest(src,float2(pos.x+1.0,pos.y-1.0)).r > threshold) &&             
+                (sampleNearest(src,float2(pos.x-1.0,pos.y+1.0)).r > threshold) &&
+                (sampleNearest(src,float2(pos.x-1.0,pos.y-1.0)).r > threshold) ){
+         
+                dst = float4(0);
+            }else{
+                dst = float4(1);
+            }
+        }else{
+            dst = float4(0);
+        }
+
+    }
+}

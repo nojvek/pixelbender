@@ -1,0 +1,37 @@
+<languageVersion : 1.0;>
+/*
+    after the sobel filter will run. the rgb channels will contain
+    (x gradient, y gradient ,-x gradient, -y gradient)
+*/
+kernel NewFilter
+<   namespace : "Your Namespace";
+    vendor : "Your Vendor";
+    version : 1;
+    description : "your description";
+>
+{
+    input image4 src;
+    output pixel4 dst;
+
+    void evaluatePixel(){
+        float2 pos = outCoord();
+        float p = sampleNearest(src,pos).r;
+        float n = sampleNearest(src,float2(pos.x,pos.y-1.0)).r;
+        float ne = sampleNearest(src,float2(pos.x+1.0,pos.y-1.0)).r;
+        float e = sampleNearest(src,float2(pos.x+1.0,pos.y)).r;
+        float se = sampleNearest(src,float2(pos.x+1.0,pos.y+1.0)).r;
+        float s = sampleNearest(src,float2(pos.x,pos.y+1.0)).r;
+        float sw = sampleNearest(src,float2(pos.x-1.0,pos.y+1.0)).r;
+        float w = sampleNearest(src,float2(pos.x-1.0,pos.y)).r;
+        float nw = sampleNearest(src,float2(pos.x-1.0,pos.y-1.0)).r;
+        
+        float gx = (-nw -sw -2.0*w +ne +se +2.0*e) / 4.0;
+        float gy = (-sw -se -2.0*s +ne +nw +2.0*n) / 4.0;
+        
+        if(gy >= 0.0){
+            dst = float4(gx,gy,-gx,1.0); 
+        }else{
+            dst = float4(-gx,-gy,gx,1.0); 
+        }
+    }
+}

@@ -1,0 +1,84 @@
+<languageVersion : 1.0;>
+/*
+    has to run after the sobel filter. the rgb channels will contain
+
+*/
+kernel NewFilter
+<   namespace : "Your Namespace";
+    vendor : "Your Vendor";
+    version : 1;
+    description : "your description";
+>
+{
+    
+   parameter float threshold<
+        minValue: 0.0;
+        maxValue: 1.0;
+        defaultValue: 0.3;
+    >;
+    
+    /* parameter float lookAngle<
+        minValue: 0.0;
+        maxValue: 180.0;
+        defaultValue: 0.0;
+    >;
+    
+    parameter float variance<
+        minValue: 0.0;
+        maxValue: 90.0;
+        defaultValue: 20.0;
+    >; */
+ 
+    input image4 src;
+    output pixel4 dst;
+
+    void evaluatePixel(){
+        float2 pos = outCoord();
+        float4 p = sampleNearest(src,pos);
+        dst = float4(0.0,0.0,0.0,1.0);
+        
+        float pSum = p.x + p.y + p.z;
+        
+        if(pSum > threshold) {
+            float gx,angle;
+            
+            if(p.z > 0.0){
+                gx = -p.z;
+            }else{
+                gx = p.x;
+            }
+            
+            angle = (atan(p.y,gx) / 3.14159265) * 180.0;
+            
+            //if( (angle >= (lookAngle - variance/2.0) )&& (angle < (lookAngle + variance/2.0))){
+            //  dst = p;
+            //}
+             
+            if ((angle >= 0.0 && angle < 22.5) || (angle <= 180.0 && angle > 157.5)){ // vertical lines
+                float4 e = sampleNearest(src,float2(pos.x+1.0,pos.y));
+                float4 w = sampleNearest(src,float2(pos.x-1.0,pos.y));
+                if(pSum >= (e.x + e.y + e.z) && pSum > (w.x + w.y + w.z)){
+                    dst = p;
+                }
+            }else if(angle >= 22.5 && angle <= 67.5){ // left diagnol lines
+                float4 ne = sampleNearest(src,float2(pos.x+1.0,pos.y-1.0));
+                float4 sw = sampleNearest(src,float2(pos.x-1.0,pos.y+1.0));
+                if(pSum >= (ne.x + ne.y + ne.z) && pSum > (sw.x + sw.y + sw.z)){
+                    dst = p;
+                }
+            }else if(angle <= 157.5 && angle >= 112.5){ // right diagnol lines
+                float4 nw = sampleNearest(src,float2(pos.x-1.0,pos.y-1.0));
+                float4 se = sampleNearest(src,float2(pos.x+1.0,pos.y+1.0));
+                if(pSum >= (nw.x + nw.y + nw.z) && pSum > (se.x + se.y + se.z)){
+                    dst = p;
+                }           
+            }else{ // horizontal lines
+                float4 n = sampleNearest(src,float2(pos.x,pos.y-1.0));
+                float4 s = sampleNearest(src,float2(pos.x,pos.y+1.0));
+                if(pSum >= (n.x + n.y + n.z) && pSum > (s.x + s.y + s.z)){
+                    dst = p;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,32 @@
+<languageVersion : 1.0;>
+
+kernel HeatMap
+<   namespace : "";
+    vendor : "";
+    version : 1;
+    description : "Generates heapmap from blue channel of an image";
+>
+{
+    input image4 src;
+    input image4 heatmap;
+    output pixel4 dst;
+    
+    parameter float maxAlpha<
+        maxValue:1.0;
+        minValue:0.0;
+        defaultValue:0.5;
+    >;
+        
+
+    void
+    evaluatePixel()
+    {
+        pixel4 color = sampleNearest(src,outCoord());
+        dst = sampleNearest(heatmap, float2(1.0, color.b*500.0));
+        if (color.a > maxAlpha){
+            dst.a = maxAlpha;
+        }else{
+            dst.a = color.a;
+        }
+    }
+}

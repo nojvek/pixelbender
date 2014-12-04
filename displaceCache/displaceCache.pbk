@@ -1,0 +1,57 @@
+<languageVersion : 1.0;>
+
+kernel DisplaceCache
+<   namespace : "com.om-labs.filters.displacementCache";
+    vendor : "Om Labs";
+    version : 1;
+    description : "Cache Super Complex Image Transforms Accurately";
+>
+{
+   
+    parameter float2 stretch<
+        minValue: float2(0.0);
+        maxValue: float2(2.0);        
+        defaultValue: float2(1.0);
+
+    >;
+
+    parameter float2 offset<
+        minValue: float2(-2000.0);
+        maxValue: float2(2000.0);
+        defaultValue: float2(0.0);
+    >;
+
+
+    input image4 src;
+    input image4 map;
+    output pixel4 dst;
+    
+   void evaluatePixel(){
+        
+        float2 curPos = outCoord();
+        pixel4 mapPos = sampleNearest(map,curPos);
+        
+        //algorithm ----
+        //float2 quotient = mapPos.rg * 255.0;
+        //float2 remainder = mapPos.ba * 255.0;
+        //float2 displacement = quotient * 255.0 + remainder;
+        //float2 readAt = displacement + curPos - 32512.5; //position where to read color Info
+        //readAt = readAt * stretch + offset;
+        //dst = sampleNearest(src, readAt);
+        
+        float2 displacement = (mapPos.rg*255.0 +mapPos.ba)*255.0 - 32512.5 + curPos;//bring it to signed range.
+        dst = sampleNearest(src, displacement*stretch + offset);
+
+
+//use the algorithm below to generate the displacementCacheMap
+//        float2 newPos = your new value;// the position in the image where to read the color value from. 
+//        float2 displacement = newPos - outCoord() + 32512.5;//255^2 /2  - signed short range
+//        float2 quotient = floor(displacement/255.0);
+//        float2 remainder = displacement - (quotient * 255.0);
+//        dst.rg = quotient/255.0;
+//        dst.ba = remainder/255.0;
+
+    }
+    
+
+}

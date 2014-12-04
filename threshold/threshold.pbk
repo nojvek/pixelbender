@@ -1,0 +1,27 @@
+<languageVersion : 1.0;>
+
+kernel NewFilter
+<   namespace : "Your Namespace";
+    vendor : "Your Vendor";
+    version : 1;
+    description : "your description";
+>
+{
+    input image4 src;
+    output pixel4 dst;
+
+    parameter float threshold<
+        minValue:0.0;
+        maxValue:1.0;
+        defaultValue:0.0;
+    >;
+    
+    void evaluatePixel(){
+        float4 color = sampleNearest(src,outCoord());
+        if((color.r < threshold) && (color.g < threshold) && (color.b < threshold)){
+            dst = float4(0);
+        }else{
+            dst = float4(1);
+        }
+    }
+}

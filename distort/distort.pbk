@@ -1,0 +1,53 @@
+<languageVersion : 1.0;>
+
+kernel NewFilter
+<   namespace : "Your Namespace";
+    vendor : "Your Vendor";
+    version : 1;
+    description : "your description";
+>
+{
+    input image4 src;
+    output pixel4 dst;
+    
+    parameter float2 dimensions<
+        maxValue:float2(2000,1050);
+        minValue:float2(0,0);
+        defaultValue:float2(1680,1050);
+    >;
+    
+    parameter float offset<
+        minValue: float(0);
+        maxValue: float(10000);
+        defaultValue: float(0);
+    >;
+    
+    parameter float stretch<
+        maxValue: float(10);
+        minValue: float(0);
+        defaultValue:float(0.3);
+    >; 
+    
+
+    void evaluatePixel(){
+        float2 pos = outCoord();
+        float t  = 1.0 - ((stretch - pos.y) / stretch) * (0.01);
+        pos.x = (pos.x - dimensions.x / 2.0) / t + dimensions.x / 2.0; 
+        //pos.y += offset;
+        
+        
+        //BUG!! mod(x,y) = x - y * floor(x / y);
+        //float moduloed = pos.y - dimensions.y * floor(pos.y/dimensions.y);
+        //float divided = pos.y/ dimensions.y;
+        
+        //if((divided - 2.0 * floor(divided/ 2.0)) > 1.0){
+        
+        //if(mod(pos.y / dimensions.y,2.0) > 1.0 ){
+        //    pos.y = dimensions.y - moduloed;
+        //}else{
+        //    pos.y = moduloed;
+        //}
+        
+        dst = sampleNearest(src,pos);
+    }
+}
